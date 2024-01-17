@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Page</title>
+  <script src="../static/crypto-js.min.js"></script>
+</head>
+<body>
+  <h2>Login</h2>
+  <form id="loginForm">
+    <label for="username">Username:</label>
+    <input type="text" id="username" name="username" required>
+    <br>
+    <label for="password">Password:</label>
+    <input type="password" id="password" name="password" required>
+    <br>
+    <button type="button" onclick="signAndLogin()">Login</button>
+  </form>
+
+  <script>
+    function signAndLogin() {
+      var username = document.getElementById("username").value;
+      var password = document.getElementById("password").value;
+
+      // 使用 HMAC 进行签名，可以选择不同的哈希算法
+      var secretKey = "1234567890abcdefghijk";  // 替换为实际的密钥
+      var dataToSign = username + password;
+
+      // 使用 CryptoJS 库进行 HMAC SHA-256 签名
+      var signature = CryptoJS.HmacSHA256(dataToSign, secretKey);
+
+      // 将签名传递给后端，这可以通过网络请求发送
+      // 比如使用 Fetch API 或 XMLHttpRequest
+      sendToServer(username, password, signature);
+    }
+
+    function sendToServer(username, password, signature) {
+      // 构建请求对象
+      var request = new XMLHttpRequest();
+      request.open("POST", "http://127.0.0.1:8000/login1", true);
+      request.setRequestHeader("Content-Type", "application/json");
+
+      // 设置请求体
+      var requestBody = JSON.stringify({
+        username: username,
+        password: password,
+        signature: signature.toString(CryptoJS.enc.Base64)
+      });
+
+      // 处理请求完成时的事件
+      request.onload = function () {
+        if (request.status === 200) {
+          var response = JSON.parse(request.responseText);
+          alert(response.message);
+
+          // 在这里你可以根据后端返回的状态执行其他操作
+        } else {
+          alert("Login failed. Please try again.");
+        }
+      };
+
+      // 发送请求
+      request.send(requestBody);
+    }
+  </script>
+</body>
+</html>
